@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        :root {
+            --primary-color: #ffcc00;
+            --secondary-color: #00ffcc;
+            --accent-color: #ff0066;
+            --text-color: #fff;
+            --output-text-color: #ffcc00;
+            --output-text-shadow-color: rgba(255, 204, 0, 0.8);
+            --background-flicker-animation: flicker 2s infinite alternate;
+            --background-color-change-animation: backgroundColorChange 2s infinite;
+            --firework-animation: explode 1s ease-out;
+        }
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', monospace;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            text-align: center;
+            background-size: cover;
+            padding: 20px;
+            animation: var(--background-flicker-animation);
+            transition: background-color 1s;
+        }
+
+        #video-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            min-width: 100%;
+            min-height: 100%;
+            z-index: -500;
+        }
+
+        @keyframes flicker {
+            from {
+                opacity: 1;
+            }
+            to {
+                opacity: 0.9;
+            }
+        }
+
+        @keyframes backgroundColorChange {
+            0% {
+                background-color: var(--primary-color);
+            }
+            25% {
+                background-color: var(--secondary-color);
+            }
+            50% {
+                background-color: var(--accent-color);
+            }
+            75% {
+                background-color: var(--secondary-color);
+            }
+            100% {
+                background-color: var(--primary-color);
+            }
+        }
+
+        #console {
+            border: 2px solid var(--secondary-color);
+            padding: 20px;
+            max-width: 600px;
+            margin: auto;
+            overflow: hidden;
+            white-space: pre-wrap;
+            line-height: 1.5;
+            background: rgba(0, 0, 0, 0.7);
+            animation: fadeIn 2s ease-in-out forwards;
+        }
+
+        #countdown {
+            font-size: 48px;
+            margin-bottom: 20px;
+            color: #fff;
+            animation: countdownAnimation 1s ease-out;
+        }
+
+        @keyframes countdownAnimation {
+            from {
+                transform: scale(0);
+            }
+            to {
+                transform: scale(1);
+            }
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        #backgroundMusic {
+            display: none;
+        }
+
+        #prompt {
+            color: var(--secondary-color);
+        }
+
+        #userInput {
+            color: var(--text-color);
+            border: none;
+            background: transparent;
+            outline: none;
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            box-sizing: border-box;
+        }
+
+        #userInput::placeholder {
+            color: #666;
+        }
+
+        #output {
+            font-size: 18px;
+            margin-top: 20px;
+            color: var(--output-text-color);
+            text-shadow: 0 0 10px var(--output-text-shadow-color), 0 0 20px var(--output-text-shadow-color);
+        }
+
+        #fireworks-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .firework {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-color);
+            opacity: 0;
+            animation: var(--firework-animation);
+        }
+
+        @keyframes explode {
+            0% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(20);
+                opacity: 0;
+            }
+        }
+
+        @media screen and (max-width: 600px) {
+            #console {
+                padding: 10px;
+            }
+        }
+
+        @media screen and (max-width: 400px) {
+            #console {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <audio id="backgroundMusic" loop>
+        <source id="songSource" type="audio/mp3">
+        Your browser does not support the audio element.
+    </audio>
+
+    <div id="fireworks-container"></div>
+
+    <video id="video-background" autoplay loop muted>
+        <source src="bgvideo.mp4" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <div id="console">
+        <div id="countdown"></div>
+        <div id="prompt">> Welcome to the New Year Console</div>
+        <div id="output"></div>
+        <div id="prompt">> Enter your name: <input type="text" id="userInput" placeholder="Type here" onkeydown="handleInput(event)"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const background = document.querySelector('body');
+            const fireworksContainer = document.getElementById('fireworks-container');
+            const countdown = document.getElementById('countdown');
+            const backgroundMusic = document.getElementById('backgroundMusic');
+            const songSource = document.getElementById('songSource');
+
+            background.style.opacity = '1'; // Adjust the background opacity
+
+            animateBackground();
+            animateText(document.getElementById('console'));
+
+            function animateBackground() {
+                setInterval(() => {
+                    background.style.backgroundColor = 'var(--primary-color)';
+                    setTimeout(() => {
+                        background.style.backgroundColor = 'var(--secondary-color)';
+                    }, 500);
+                    setTimeout(() => {
+                        background.style.backgroundColor = 'var(--accent-color)';
+                    }, 1000);
+                    setTimeout(() => {
+                        background.style.backgroundColor = 'var(--secondary-color)';
+                    }, 1500);
+                }, 2000);
+            }
+
+            function createFirework() {
+                const firework = document.createElement('div');
+                firework.className = 'firework';
+                firework.style.left = Math.random() * 100 + 'vw';
+                fireworksContainer.appendChild(firework);
+
+                setTimeout(() => {
+                    firework.remove();
+                }, 1000);
+            }
+
+            setInterval(createFirework, 2000);
+        });
+
+        function handleInput(event) {
+            if (event.key === 'Enter') {
+                const name = document.getElementById('userInput').value;
+                const greeting = document.getElementById('output');
+                const quotes = [
+                    `<strong>Happy New Year, ${name}! Wishing you a year filled with joy and success.</strong>`,
+                    `<strong>Cheers to a fantastic New Year, ${name}! May it be full of exciting adventures.</strong>`,
+                    `<strong>May this New Year bring you happiness and prosperity, ${name}!</strong>`,
+                    `<strong>Wishing you a year ahead filled with love and laughter, ${name}!</strong>`
+                ];
+                const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+
+                // Change the song based on the entered name
+                changeSong(name);
+
+                // Start the countdown
+                startCountdown();
+
+                // After the countdown, show quotes and wishes
+                setTimeout(() => {
+                    greeting.innerHTML = randomQuote;
+                    animateText(greeting);
+                }, 4000);
+
+                // After an additional 5 seconds, show "Happy New Year 2024" text
+                setTimeout(() => {
+                    greeting.innerHTML = `<strong>Happy New Year 2024, ${name}!</strong>`;
+                    animateText(greeting);
+                }, 9000);
+            }
+        }
+
+        function animateText(element) {
+            const opacity = 0;
+            let currentOpacity = opacity;
+            const interval = setInterval(function () {
+                if (currentOpacity >= 1) {
+                    clearInterval(interval);
+                }
+                element.style.opacity = currentOpacity;
+                currentOpacity += 0.05;
+            }, 100);
+        }
+
+        function startCountdown() {
+            let count = 3;
+            const countdownElement = document.getElementById('countdown');
+            countdownElement.innerText = count;
+            countdownElement.style.display = 'block';
+
+            const countdownInterval = setInterval(() => {
+                count--;
+                if (count >= 0) {
+                    countdownElement.innerText = count;
+                } else {
+                    clearInterval(countdownInterval);
+                    countdownElement.style.display = 'none';
+                }
+            }, 1000);
+        }
+
+        function changeSong(name) {
+            const songs = {
+                'salman': 'song1.mp3',
+                'sarukh': 'song2.mp3',
+                'prabhas': 'song3.mp3'
+                // Add more names and corresponding songs as needed
+            };
+
+            const song = songs[name] || 'defaultSong.mp3';
+            songSource.src = song;
+            backgroundMusic.load();
+            backgroundMusic.play();
+        }
+    </script>
+</body>
+</html>
